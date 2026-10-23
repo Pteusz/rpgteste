@@ -1,0 +1,9 @@
+{
+  "name": "rpgteste",
+  "private": true,
+  "type": "module",
+  "description": "Jogo de turno estilo monstros, 4 monstros, batalha online por websocket",
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
