@@ -116,6 +116,10 @@ cmd_fechar() {
   git commit -q -m "$id: $(campo fazendo)" --allow-empty
   git tag -f "save/$id" >/dev/null
   echo "$id fechada. Save point: save/$id"
+  if [ "${PUSH:-0}" = "1" ] && git remote | grep -q .; then
+    git push -q origin HEAD && git push -q origin "save/$id" && echo "enviado ao remoto (commit + tag)" \
+      || echo "AVISO: push falhou; o save existe só localmente."
+  fi
   echo "Pendências que surgiram? Anote em PENDENCIAS.md. Depois: ./m novo ..."
 }
 
