@@ -1,10 +1,10 @@
 // Núcleo puro: sem I/O, sem relógio, sem aleatoriedade. Tudo é dado + uma função.
 //
-// Primitivos:
+// Primitivos (MODELO.md, seção 2):
 //   1. estado   — objeto imutável {turno, lados:[{monstro,hp},{monstro,hp}], fim}
-//   2. ação     — uma escolha por lado: {golpe: <indice>}
-//   3. resolver — (estado, [ação0, ação1]) -> {estado, eventos}
-// Todo o resto (dano, vantagem de tipo, ordem de ataque, fim de jogo) deriva destes três.
+//   2. resolver — (estado, entradas) -> {estado, eventos}
+// A ação ({golpe: <indice>}, uma por lado) não é primitivo: é a entrada do resolver.
+// Todo o resto (dano, vantagem de tipo, ordem de ataque, fim de jogo) deriva destes dois.
 
 // Anel de tipos: cada tipo vence o seguinte (e perde para o anterior). A tabela de
 // vantagens inteira deriva dessa única ordem.

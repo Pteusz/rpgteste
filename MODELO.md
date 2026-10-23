@@ -17,18 +17,20 @@ Se a regra estiver errada, o exemplo vai parecer errado para você. É nesse mom
 | P3 | Batalhas online por websocket | [Mateus decidiu] |
 | P4 | A linguagem é escolha do Claude | [Mateus decidiu] |
 | P5 | Os dois jogadores escolhem em segredo e a resolução só acontece quando ambos escolheram | [Claude propôs] |
-| P6 | Os ataques de um turno são resolvidos **em sequência**, do mais rápido para o mais lento (não são simultâneos) | [Claude propôs] |
+| P6 | Os ataques de um turno são resolvidos **em sequência**, do mais rápido para o mais lento (não são simultâneos) | [Mateus decidiu] |
 | P7 | Sem aleatoriedade: mesma entrada, sempre a mesma saída | [Claude propôs] |
 | P8 | Um monstro por jogador por partida, sem troca | [Claude propôs] |
 | P9 | O servidor é autoritativo: o cliente só envia a intenção, nunca o resultado | [Claude propôs] |
 | P10 | Um golpe por monstro nesta fase (poder 30, do próprio tipo) | [Claude propôs] |
+| P11 | A ação não é um primitivo: é apenas a entrada do `resolver` | [Mateus decidiu] |
 
 ## 2. Primitivos e derivações
 
-### Os primitivos [Claude propôs]
+### Os primitivos [dois, por decisão do Mateus (P11); a forma de cada um é proposta do Claude]
 1. **Estado**: um valor imutável com `turno`, os dois `lados` (`monstro` e `hp` de cada um) e `fim` (nulo, ou o lado vencedor).
-2. **Ação**: a escolha de um lado em um turno (hoje, só `golpe`: qual golpe usar).
-3. **Resolver**: uma função pura `resolver(estado, [ação do lado 0, ação do lado 1]) → {novo estado, eventos}`.
+2. **Resolver**: uma função pura `resolver(estado, entradas) → {novo estado, eventos}`.
+
+A **ação** (a escolha de um lado em um turno; hoje, só `golpe`: qual golpe usar) não é primitivo: é o dado que entra no `resolver`, uma por lado, como `entradas = [ação do lado 0, ação do lado 1]`.
 
 Tudo que o jogo faz é aplicar `resolver` repetidamente. Não existe outra forma de o estado mudar.
 
@@ -106,9 +108,9 @@ Resultado: hp `[85, 0]`, turno 2, fim = 0. Um único evento: `0→1 valor 60` (R
 Resultado: hp `[0, 70]`, turno 1, fim = 1. Dois eventos: `0→1 30`, `1→0 30`.
 
 ## 6. Perguntas abertas para você
-- **Q1.** Ataques em sequência por velocidade (P6) é o que você imagina? A alternativa é simultâneo: os dois acertam no mesmo turno, e os dois podem cair juntos (empate).
+- **Q1.** ~~Sequência por velocidade ou simultâneo?~~ Resolvida: sequência por velocidade (P6).
 - **Q2.** Sem aleatoriedade (P7) está bom para começar? Acerto e crítico entrariam depois, como entrada explícita do `resolver`.
-- **Q3.** Os três primitivos são os certos? Dúvida honesta minha: "ação" talvez seja só a entrada do `resolver` e não um primitivo à parte, o que deixaria dois primitivos (estado e transformação).
+- **Q3.** ~~Quantos primitivos?~~ Resolvida: dois, estado e `resolver`; a ação é só a entrada (P11).
 - **Q4.** O `valor` de dano deve ser o calculado (60 em E5) ou o que realmente foi removido (40)?
 - **Q5.** Um monstro por jogador sem troca (P8) fica para esta fase, ou você já quer time e troca?
 - **Q6.** Os números (HP 100, poder 30, velocidades) são só placeholders. Algum tem significado para você?
