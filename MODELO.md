@@ -1,7 +1,8 @@
 # MODELO — jogo de turno com 4 monstros, batalha online
 
 Este arquivo é a fonte da verdade sobre **o que o jogo é**. O código e os testes são derivados dele, nunca o contrário.
-Nada aqui vale até estar marcado `[Mateus decidiu]`. Itens `[Claude propôs]` são hipóteses esperando sua revisão.
+Legenda: `[Mateus decidiu]` = veio dele; `[Mateus aprovou]` = proposta do Claude que ele aprovou.
+**Aprovação:** em 2026-10-23 o Mateus aprovou o modelo desta versão (resposta "ok"), incluindo a regra R7 como está escrita (o `valor` do evento é o dano calculado). Qualquer mudança nasce de uma missão de renegociação.
 
 **Como conferir sem ler código:** pegue os exemplos da seção 5, aplique as regras da seção 2 à mão e veja se o resultado bate.
 Se a regra estiver errada, o exemplo vai parecer errado para você. É nesse momento que o modelo se corrige.
@@ -16,12 +17,12 @@ Se a regra estiver errada, o exemplo vai parecer errado para você. É nesse mom
 | P2 | Jogo de turno, estilo Pokémon, com somente 4 monstros | [Mateus decidiu] |
 | P3 | Batalhas online por websocket | [Mateus decidiu] |
 | P4 | A linguagem é escolha do Claude | [Mateus decidiu] |
-| P5 | Os dois jogadores escolhem em segredo e a resolução só acontece quando ambos escolheram | [Claude propôs] |
+| P5 | Os dois jogadores escolhem em segredo e a resolução só acontece quando ambos escolheram | [Mateus aprovou] |
 | P6 | Os ataques de um turno são resolvidos **em sequência**, do mais rápido para o mais lento (não são simultâneos) | [Mateus decidiu] |
-| P7 | Sem aleatoriedade: mesma entrada, sempre a mesma saída | [Claude propôs] |
-| P8 | Um monstro por jogador por partida, sem troca | [Claude propôs] |
-| P9 | O servidor é autoritativo: o cliente só envia a intenção, nunca o resultado | [Claude propôs] |
-| P10 | Um golpe por monstro nesta fase (poder 30, do próprio tipo) | [Claude propôs] |
+| P7 | Sem aleatoriedade: mesma entrada, sempre a mesma saída | [Mateus aprovou] |
+| P8 | Um monstro por jogador por partida, sem troca | [Mateus aprovou] |
+| P9 | O servidor é autoritativo: o cliente só envia a intenção, nunca o resultado | [Mateus aprovou] |
+| P10 | Um golpe por monstro nesta fase (poder 30, do próprio tipo) | [Mateus aprovou] |
 | P11 | A ação não é um primitivo: é apenas a entrada do `resolver` | [Mateus decidiu] |
 
 ## 2. Primitivos e derivações
@@ -34,7 +35,7 @@ A **ação** (a escolha de um lado em um turno; hoje, só `golpe`: qual golpe us
 
 Tudo que o jogo faz é aplicar `resolver` repetidamente. Não existe outra forma de o estado mudar.
 
-### Dados (não são primitivos, são tabelas) [Claude propôs]
+### Dados (não são primitivos, são tabelas) [Mateus aprovou]
 - **Anel de tipos:** `brasa → folha → onda → raio → (volta a brasa)`. Cada tipo vence o seguinte.
 - **Monstros:** cada um tem tipo, `hp` e `vel` (velocidade).
 
@@ -45,7 +46,7 @@ Tudo que o jogo faz é aplicar `resolver` repetidamente. Não existe outra forma
 | onda  | onda  | 100 | 50 | jato |
 | raio  | raio  | 100 | 70 | faísca |
 
-### Regras derivadas [Claude propôs]
+### Regras derivadas [Mateus aprovou]
 - **R1. Multiplicador.** Conte quantos passos o tipo do defensor está à frente do tipo do atacante no anel. 1 passo: x2. 3 passos (ou seja, 1 para trás): x0,5. 0 ou 2 passos: x1.
   Então: brasa vence folha, folha vence onda, onda vence raio, raio vence brasa. Brasa × onda e folha × raio são neutros.
 - **R2. Dano.** `dano = arredondar para baixo (poder do golpe × multiplicador)`. Com poder 30 só existem três valores: 60, 30 ou 15.
@@ -55,14 +56,14 @@ Tudo que o jogo faz é aplicar `resolver` repetidamente. Não existe outra forma
 - **R6. Turno.** Após resolver, `turno` aumenta em 1.
 - **R7. Evento.** Cada ataque gera um evento `dano {de, para, valor}`. O `valor` é o dano calculado em R2, **mesmo que o hp restante seja menor** (ver pergunta Q4).
 
-### Protocolo (como o servidor conversa com os clientes) [Claude propôs]
+### Protocolo (como o servidor conversa com os clientes) [Mateus aprovou]
 - Quando o 2º jogador conecta, o servidor manda `inicio {lado, estado}` para ambos. O 1º a conectar é o lado 0.
 - Cada cliente manda `acao {golpe}` uma única vez por turno.
 - Quando as duas ações chegaram, o servidor manda a **mesma** mensagem `turno {eventos, estado}` para ambos.
 - Ação inválida, repetida no mesmo turno, ou fora de partida → mensagem `erro {motivo}` só para quem errou.
 - Um 3º cliente é recusado (partida cheia).
 
-## 3. Invariantes (devem valer sempre) [Claude propôs]
+## 3. Invariantes (devem valer sempre) [Mateus aprovou]
 - `hp` nunca é negativo e nunca passa do `hp` inicial.
 - Mesma entrada produz a mesma saída (P7).
 - Os dois jogadores recebem exatamente a mesma resolução de um turno.
@@ -107,10 +108,10 @@ Resultado: hp `[85, 0]`, turno 2, fim = 0. Um único evento: `0→1 valor 60` (R
 2. onda ataca: neutro, 30. brasa: 10 − 30 → 0. `fim` = lado 1.
 Resultado: hp `[0, 70]`, turno 1, fim = 1. Dois eventos: `0→1 30`, `1→0 30`.
 
-## 6. Perguntas abertas para você
+## 6. Perguntas (todas resolvidas nesta versão)
 - **Q1.** ~~Sequência por velocidade ou simultâneo?~~ Resolvida: sequência por velocidade (P6).
-- **Q2.** Sem aleatoriedade (P7) está bom para começar? Acerto e crítico entrariam depois, como entrada explícita do `resolver`.
+- **Q2.** ~~Sem aleatoriedade?~~ Resolvida: sem aleatoriedade (P7). Se vier depois, entra como entrada explícita do `resolver`.
 - **Q3.** ~~Quantos primitivos?~~ Resolvida: dois, estado e `resolver`; a ação é só a entrada (P11).
-- **Q4.** O `valor` de dano deve ser o calculado (60 em E5) ou o que realmente foi removido (40)?
-- **Q5.** Um monstro por jogador sem troca (P8) fica para esta fase, ou você já quer time e troca?
-- **Q6.** Os números (HP 100, poder 30, velocidades) são só placeholders. Algum tem significado para você?
+- **Q4.** ~~Valor calculado ou removido?~~ Resolvida: calculado (R7, 60 em E5). Lido a partir do "ok" sobre o texto como estava escrito.
+- **Q5.** ~~Time e troca agora?~~ Resolvida: um monstro por jogador, sem troca (P8), nesta fase.
+- **Q6.** ~~Algum número tem significado?~~ Resolvida: são placeholders, ajustáveis depois por missão de renegociação.
